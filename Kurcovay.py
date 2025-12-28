@@ -87,14 +87,12 @@ errors = []
 
 avg_errors = []
 epohs = 0
-predicts = []
 for i in range(1000):
   epohs += 1
   total_erorrs = 0
   indices = np.random.permutation(len(X))
   for idx in indices:
     y_predict = w0 + w1*X_Age[idx] + w2*X_Bp[idx] + w3*X_Ch[idx] + w4*X_Max[idx]
-    predicts.append(y_predict)
     error =  y_predict - y.iloc[idx]
     total_erorrs += error**2
     w0_new = w0 - learning_rate * error
@@ -125,6 +123,10 @@ print(f"w4 (Макс. пульс): {w4:.6f}")
 
 print("Оценка точности модели:")
 print("="*50)
+predicts = []
+for j in range(len(y)):
+    y_predict = w0 + w1*X_Age[j] + w2*X_Bp[j] + w3*X_Ch[j] + w4*X_Max[j]
+    predicts.append(y_predict)
 right = []
 for i in range(len(predicts)):
   if ( predicts[i] > 0.5): right.append(1)
