@@ -50,19 +50,88 @@ newDf.head()
 # Подготовка X (признаки) и y (целевая переменная)
 X = newDf[['Возраст','BP','Холестерин','Макс ЧСС']]
 y = newDf['Сердечное заболевание']
+learning_rate = 0.01
 # Иницилизируем веса
-w0 = 0.01
-w1 = 0.01
-w2 = 0.01
-w3 = 0.01
-w4 = 0.01
-predicts = []
-for i in range(len(y)):
-  y_predict = w0 + w1*X.iloc[i]['Возраст'] + w2*X.iloc[i]['BP'] + w3*X.iloc[i]['Холестерин'] + w4*X.iloc[i]['Холестерин']
-  predicts.append(y_predict)
+w0 = np.random.randn() * 0.01
+w1 = np.random.randn() * 0.01
+w2 = np.random.randn() * 0.01
+w3 = np.random.randn() * 0.01
+w4 = np.random.randn() * 0.01
 
-cost_function =[]
-def getCostFunctions():
-  for i in range(len(y)):
-    cost_function.append((y.iloc[i] - predicts[i])**2)
-getCostFunctions()
+# Нормализуем данные
+X_Age = []
+maxXAge = max(df['Age'])
+minXAge = min(df['Age'])
+for t in range(len(df['Age'])):
+  x = (X.iloc[t]['Возраст'] - minXAge)/(maxXAge - minXAge)
+  X_Age. append(x)
+X_Ch = []
+maxXCh = max(df['Cholesterol'])
+minXCh = min(df['Cholesterol'])
+for t in range(len(df['Cholesterol'])):
+  x = (X.iloc[t]['Холестерин'] - minXCh)/(maxXCh - minXCh)
+  X_Ch. append(x)
+X_Bp = []
+maxXBP = max(df['BP'])
+minBP = min(df['BP'])
+for t in range(len(df['BP'])):
+  x = (X.iloc[t]['BP'] - minBP)/(maxXBP - minBP)
+  X_Bp. append(x)
+X_Max = []
+maxXZCC = max(df['Max HR'])
+minXZCC = min(df['Max HR'])
+for t in range(len(df['Max HR'])):
+  x = (X.iloc[t]['Макс ЧСС'] - minXZCC)/(maxXZCC - minXZCC)
+  X_Max. append(x)
+errors = []
+
+avg_errors = []
+epohs = 0
+predicts = []
+for i in range(1000):
+  epohs += 1
+  total_erorrs = 0
+  indices = np.random.permutation(len(X))
+  for idx in indices:
+    y_predict = w0 + w1*X_Age[idx] + w2*X_Bp[idx] + w3*X_Ch[idx] + w4*X_Max[idx]
+    predicts.append(y_predict)
+    error =  y_predict - y.iloc[idx]
+    total_erorrs += error**2
+    w0_new = w0 - learning_rate * error
+    w0 = w0_new
+    w1_new = w1 - learning_rate * error * X_Age[idx]
+    w1 = w1_new
+    w2_new = w2 - learning_rate * error * X_Bp[idx]
+    w2 = w2_new
+    w3_new = w3 - learning_rate * error * X_Ch[idx]
+    w3 = w3_new
+    w4_new = w4 - learning_rate * error * X_Max[idx]
+    w4 = w4_new
+  errors.append(total_erorrs)
+  avg_errors.append(total_erorrs/len(y))
+  if(len(avg_errors) > 2):
+    if(abs(avg_errors[-2] - avg_errors[-1]) < 0.0001):
+      print("Обучение закончено на эпохе: " + str(epohs))
+      print(f"Финальная MSE: {avg_errors[-1]:.6f}")
+      break
+
+print("ИТОГОВЫЕ ВЕСА МОДЕЛИ:")
+print("="*50)
+print(f"w0 (bias): {w0:.6f}")
+print(f"w1 (Возраст): {w1:.6f}")
+print(f"w2 (Артериальное давление): {w2:.6f}")
+print(f"w3 (Холестерин): {w3:.6f}")
+print(f"w4 (Макс. пульс): {w4:.6f}")
+
+print("Оценка точности модели:")
+print("="*50)
+right = []
+for i in range(len(predicts)):
+  if ( predicts[i] > 0.5): right.append(1)
+  else: right.append(0)
+accuracy = 0
+for t  in range(len(y)):
+  if  (y.iloc[t] == right[t])  : accuracy += 1
+
+print(f"Угадано : {accuracy}  из {len(y)}")
+print(f"Точность : {(accuracy / len(y)) * 100} %")
